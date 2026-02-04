@@ -246,13 +246,28 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 0 60px var(--cyan-dim));
+            position: relative;
+        }
+
+        /* Glow effect as pseudo-element (Safari-compatible) */
+        .hero-title .structure::before {
+            content: 'STRUCTURE';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            color: var(--cyan-glow);
+            filter: blur(40px);
+            opacity: 0.5;
+            z-index: -1;
             animation: titlePulse 4s ease-in-out infinite;
+            -webkit-text-fill-color: var(--cyan-glow);
+            background: none;
         }
 
         @keyframes titlePulse {
-            0%, 100% { filter: drop-shadow(0 0 60px var(--cyan-dim)); }
-            50% { filter: drop-shadow(0 0 100px var(--cyan-glow)); }
+            0%, 100% { opacity: 0.5; filter: blur(40px); }
+            50% { opacity: 0.7; filter: blur(60px); }
         }
 
         .hero-subtitle {
@@ -762,12 +777,93 @@
             .hud-corner::before { height: 30px !important; }
             .hud-corner::after { width: 30px !important; }
 
-            .lore-grid {
-                grid-template-columns: 1fr;
-                padding: 0 25px;
+            .hero {
+                padding: 80px 15px;
             }
 
-            .lore-card { padding: 35px; }
+            .hero-title {
+                letter-spacing: 0.1em;
+            }
+
+            .hero-title .structure::before {
+                letter-spacing: 0.1em;
+            }
+
+            .hero-subtitle {
+                letter-spacing: 3px;
+                padding: 0 10px;
+            }
+
+            .artist-name-main {
+                letter-spacing: 0.3em;
+                font-size: clamp(0.8rem, 4vw, 1.2rem);
+            }
+
+            .lore-section {
+                padding: 80px 0;
+            }
+
+            .lore-header {
+                padding: 0 20px;
+                margin-bottom: 60px;
+            }
+
+            .lore-grid {
+                grid-template-columns: 1fr;
+                padding: 0 20px;
+                gap: 20px;
+            }
+
+            .lore-card {
+                padding: 30px 25px;
+            }
+
+            .lore-card::after {
+                font-size: 30px;
+            }
+
+            .terminal-section {
+                padding: 80px 20px;
+            }
+
+            .terminal-body {
+                padding: 25px 20px;
+            }
+
+            .terminal-line {
+                font-size: 11px;
+            }
+
+            .terminal-line .output {
+                padding-left: 15px;
+            }
+
+            .quote-section {
+                padding: 100px 25px;
+            }
+
+            .quote-section::before {
+                font-size: 150px;
+                top: 40px;
+            }
+
+            .quote-text {
+                font-size: clamp(1.1rem, 5vw, 1.5rem);
+            }
+
+            .coming-section {
+                padding: 80px 20px;
+            }
+
+            .coming-year {
+                font-size: clamp(4rem, 18vw, 8rem);
+            }
+
+            .coming-text {
+                letter-spacing: 0.4em;
+                font-size: 10px;
+                margin-top: -20px;
+            }
 
             footer {
                 flex-direction: column;
@@ -778,6 +874,29 @@
             .footer-links {
                 flex-direction: column;
                 gap: 20px;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 380px) {
+            .hero-title {
+                letter-spacing: 0.05em;
+            }
+
+            .hero-title .structure::before {
+                letter-spacing: 0.05em;
+            }
+
+            .artist-name-main {
+                letter-spacing: 0.2em;
+            }
+
+            .lore-card {
+                padding: 25px 20px;
+            }
+
+            .coming-year {
+                font-size: clamp(3rem, 16vw, 6rem);
             }
         }
 
