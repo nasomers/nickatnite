@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE STRUCTURE | Nick at Nite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #05050a;
+            --bg-layer: #0a0a12;
+            --cyan-glow: #00f5ff;
+            --cyan-dim: #00f5ff40;
+            --cyan-bright: #7fffff;
+            --white-pure: #ffffff;
+            --white-dim: #ffffff70;
+            --white-ghost: #ffffff10;
+            --orange-signal: #ff6b35;
+            --magenta-accent: #ff00aa;
+            --grid-line: #ffffff06;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-void);
+            color: var(--white-pure);
+            font-family: 'IBM Plex Mono', monospace;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* Animated background canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        /* Subtle vignette */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, var(--bg-void) 90%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Scanline overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 245, 255, 0.02) 2px,
+                rgba(0, 245, 255, 0.02) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Noise texture overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        /* HUD Corner Brackets */
+        .hud-corner {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            z-index: 100;
+            opacity: 0.5;
+        }
+
+        .hud-corner::before,
+        .hud-corner::after {
+            content: '';
+            position: absolute;
+            background: var(--cyan-glow);
+        }
+
+        .hud-corner.top-left { top: 20px; left: 20px; }
+        .hud-corner.top-left::before { width: 1px; height: 50px; top: 0; left: 0; }
+        .hud-corner.top-left::after { width: 50px; height: 1px; top: 0; left: 0; }
+
+        .hud-corner.top-right { top: 20px; right: 20px; }
+        .hud-corner.top-right::before { width: 1px; height: 50px; top: 0; right: 0; }
+        .hud-corner.top-right::after { width: 50px; height: 1px; top: 0; right: 0; }
+
+        .hud-corner.bottom-left { bottom: 20px; left: 20px; }
+        .hud-corner.bottom-left::before { width: 1px; height: 50px; bottom: 0; left: 0; }
+        .hud-corner.bottom-left::after { width: 50px; height: 1px; bottom: 0; left: 0; }
+
+        .hud-corner.bottom-right { bottom: 20px; right: 20px; }
+        .hud-corner.bottom-right::before { width: 1px; height: 50px; bottom: 0; right: 0; }
+        .hud-corner.bottom-right::after { width: 50px; height: 1px; bottom: 0; right: 0; }
+
+        /* Katakana HUD elements */
+        .hud-element {
+            position: fixed;
+            font-family: 'Noto Sans JP', 'IBM Plex Mono', sans-serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--cyan-glow);
+            opacity: 0.4;
+            z-index: 100;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .hud-element.horizontal {
+            writing-mode: horizontal-tb;
+        }
+
+        .hud-left-1 { top: 150px; left: 25px; }
+        .hud-left-2 { top: 350px; left: 25px; }
+        .hud-left-3 { bottom: 200px; left: 25px; }
+        
+        .hud-right-1 { top: 120px; right: 25px; }
+        .hud-right-2 { top: 320px; right: 25px; }
+        .hud-right-3 { bottom: 180px; right: 25px; }
+
+        .hud-bottom-left {
+            position: fixed;
+            bottom: 80px;
+            left: 80px;
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: var(--cyan-dim);
+            z-index: 100;
+        }
+
+        .hud-bottom-right {
+            position: fixed;
+            bottom: 80px;
+            right: 80px;
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: var(--cyan-dim);
+            z-index: 100;
+            text-align: right;
+        }
+
+        /* System status bar */
+        .system-bar {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 40px;
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--cyan-glow);
+            z-index: 100;
+            opacity: 0.6;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .system-bar span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--cyan-glow);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--cyan-glow); }
+            50% { opacity: 0.3; box-shadow: none; }
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 100px 20px;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3.5rem, 12vw, 10rem);
+            font-weight: 900;
+            letter-spacing: 0.25em;
+            text-align: center;
+            line-height: 0.9;
+            position: relative;
+        }
+
+        .hero-title .the {
+            display: block;
+            font-size: 0.2em;
+            letter-spacing: 1.5em;
+            color: var(--cyan-glow);
+            margin-bottom: 15px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .hero-title .structure {
+            display: block;
+            background: linear-gradient(180deg, var(--white-pure) 0%, var(--cyan-bright) 50%, var(--cyan-glow) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 60px var(--cyan-dim));
+            animation: titlePulse 4s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { filter: drop-shadow(0 0 60px var(--cyan-dim)); }
+            50% { filter: drop-shadow(0 0 100px var(--cyan-glow)); }
+        }
+
+        .hero-subtitle {
+            margin-top: 50px;
+            font-size: 11px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--white-dim);
+            text-align: center;
+        }
+
+        /* Artist name - deconstructed/cerebral style */
+        .artist-name {
+            margin-top: 80px;
+            position: relative;
+            text-align: center;
+        }
+
+        .artist-name-main {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1rem, 2.5vw, 1.8rem);
+            font-weight: 700;
+            letter-spacing: 0.8em;
+            color: var(--white-pure);
+            position: relative;
+            display: inline-block;
+        }
+
+        .artist-name-main::before {
+            content: 'ニック・アット・ナイト';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--cyan-glow);
+            opacity: 0.6;
+            white-space: nowrap;
+            font-weight: 300;
+        }
+
+        .artist-name-main::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+        }
+
+        .artist-name-glitch {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            color: var(--magenta-accent);
+            opacity: 0;
+            clip-path: inset(0 0 0 0);
+        }
+
+        .artist-name:hover .artist-name-glitch {
+            animation: glitchReveal 0.5s steps(2) infinite;
+        }
+
+        @keyframes glitchReveal {
+            0%, 100% { opacity: 0; transform: translate(0); }
+            25% { opacity: 0.8; transform: translate(-3px, 1px); clip-path: inset(20% 0 60% 0); }
+            50% { opacity: 0; transform: translate(0); }
+            75% { opacity: 0.8; transform: translate(3px, -1px); clip-path: inset(60% 0 20% 0); }
+        }
+
+        /* Scroll indicator */
+        .transmission {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+        }
+
+        .transmission-text {
+            font-size: 9px;
+            letter-spacing: 4px;
+            color: var(--cyan-glow);
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .transmission-arrow {
+            width: 1px;
+            height: 35px;
+            background: linear-gradient(180deg, var(--cyan-glow), transparent);
+        }
+
+        /* Lore Section */
+        .lore-section {
+            padding: 150px 0;
+            position: relative;
+        }
+
+        .lore-header {
+            text-align: center;
+            margin-bottom: 100px;
+            padding: 0 40px;
+        }
+
+        .lore-header h2 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 6px;
+            color: var(--cyan-glow);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .lore-header h2::before,
+        .lore-header h2::after {
+            content: '';
+            width: 60px;
+            height: 1px;
+            background: var(--cyan-dim);
+        }
+
+        .lore-header p {
+            font-size: 13px;
+            color: var(--white-dim);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 2.2;
+            font-weight: 300;
+        }
+
+        /* Lore cards */
+        .lore-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 30px;
+            padding: 0 60px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .lore-card {
+            background: linear-gradient(135deg, var(--bg-layer) 0%, rgba(0, 245, 255, 0.02) 100%);
+            border: 1px solid var(--white-ghost);
+            padding: 45px;
+            position: relative;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .lore-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+            transform: scaleX(0);
+            transition: transform 0.6s ease;
+        }
+
+        .lore-card::after {
+            content: attr(data-kanji);
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 40px;
+            color: var(--white-ghost);
+            opacity: 0.3;
+            transition: all 0.6s ease;
+        }
+
+        .lore-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .lore-card:hover::after {
+            color: var(--cyan-dim);
+            opacity: 0.5;
+        }
+
+        .lore-card:hover {
+            border-color: var(--cyan-dim);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 245, 255, 0.1), inset 0 0 60px rgba(0, 245, 255, 0.02);
+        }
+
+        .lore-card-number {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            color: var(--cyan-glow);
+            letter-spacing: 4px;
+            margin-bottom: 25px;
+            opacity: 0.8;
+        }
+
+        .lore-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--white-pure);
+            letter-spacing: 0.05em;
+        }
+
+        .lore-card p {
+            font-size: 12px;
+            line-height: 2.2;
+            color: var(--white-dim);
+            font-weight: 300;
+        }
+
+        .lore-card .hidden-text {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--white-ghost);
+            font-size: 11px;
+            color: var(--cyan-glow);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }
+
+        .lore-card:hover .hidden-text {
+            opacity: 0.7;
+            transform: translateY(0);
+        }
+
+        /* Terminal section */
+        .terminal-section {
+            padding: 150px 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .terminal {
+            background: var(--bg-layer);
+            border: 1px solid var(--white-ghost);
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .terminal::before {
+            content: 'SYS.INTERFACE';
+            position: absolute;
+            top: -25px;
+            left: 0;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--cyan-dim);
+        }
+
+        .terminal-header {
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--white-ghost);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid var(--white-ghost);
+        }
+
+        .terminal-dots span:first-child { background: #ff5f5680; border-color: #ff5f56; }
+        .terminal-dots span:nth-child(2) { background: #ffbd2e80; border-color: #ffbd2e; }
+        .terminal-dots span:nth-child(3) { background: #27ca4080; border-color: #27ca40; }
+
+        .terminal-title {
+            font-size: 9px;
+            color: var(--white-dim);
+            letter-spacing: 3px;
+        }
+
+        .terminal-body {
+            padding: 35px;
+            min-height: 280px;
+        }
+
+        .terminal-line {
+            margin-bottom: 18px;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .terminal-line .prompt {
+            color: var(--cyan-glow);
+        }
+
+        .terminal-line .command {
+            color: var(--white-pure);
+        }
+
+        .terminal-line .output {
+            color: var(--white-dim);
+            padding-left: 25px;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .terminal-line .highlight {
+            color: var(--orange-signal);
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: var(--cyan-glow);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Quote section */
+        .quote-section {
+            padding: 200px 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .quote-section::before {
+            content: '構';
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 250px;
+            color: var(--white-ghost);
+            opacity: 0.15;
+            line-height: 1;
+        }
+
+        .quote-text {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.3rem, 3.5vw, 2.5rem);
+            font-weight: 400;
+            line-height: 1.7;
+            max-width: 850px;
+            margin: 0 auto;
+            color: var(--white-pure);
+            position: relative;
+            z-index: 1;
+        }
+
+        .quote-attribution {
+            margin-top: 50px;
+            font-size: 10px;
+            letter-spacing: 5px;
+            color: var(--cyan-glow);
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        /* Coming section */
+        .coming-section {
+            padding: 150px 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .coming-year {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(6rem, 20vw, 16rem);
+            font-weight: 900;
+            color: transparent;
+            -webkit-text-stroke: 1px var(--cyan-dim);
+            letter-spacing: 0.15em;
+            line-height: 1;
+            position: relative;
+        }
+
+        .coming-year::before {
+            content: '二〇二六';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1em;
+            color: var(--cyan-glow);
+            opacity: 0.5;
+            -webkit-text-stroke: 0;
+        }
+
+        .coming-text {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.8em;
+            color: var(--cyan-glow);
+            margin-top: -40px;
+            position: relative;
+            z-index: 1;
+            opacity: 0.8;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 60px;
+            border-top: 1px solid var(--white-ghost);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .footer-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.5em;
+            color: var(--white-dim);
+            font-weight: 600;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 50px;
+        }
+
+        .footer-links a {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--white-dim);
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--cyan-glow);
+            transition: width 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--cyan-glow);
+        }
+
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+
+        .footer-signal {
+            font-size: 9px;
+            color: var(--cyan-dim);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .system-bar { display: none; }
+            .hud-element { display: none; }
+            .hud-bottom-left, .hud-bottom-right { display: none; }
+
+            .hud-corner {
+                width: 30px;
+                height: 30px;
+            }
+
+            .hud-corner::before { height: 30px !important; }
+            .hud-corner::after { width: 30px !important; }
+
+            .lore-grid {
+                grid-template-columns: 1fr;
+                padding: 0 25px;
+            }
+
+            .lore-card { padding: 35px; }
+
+            footer {
+                flex-direction: column;
+                text-align: center;
+                padding: 40px 25px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        /* Interactive cursor glow */
+        .cursor-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--cyan-dim) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9997;
+            transform: translate(-50%, -50%);
+            opacity: 0.15;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Scroll reveal animation base */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+    <div class="vignette"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- HUD Corners -->
+    <div class="hud-corner top-left"></div>
+    <div class="hud-corner top-right"></div>
+    <div class="hud-corner bottom-left"></div>
+    <div class="hud-corner bottom-right"></div>
+
+    <!-- Katakana HUD Elements -->
+    <div class="hud-element hud-left-1">パターン認識</div>
+    <div class="hud-element hud-left-2">構造.ACTIVE</div>
+    <div class="hud-element hud-left-3">ループ継続中</div>
+    
+    <div class="hud-element hud-right-1">意識レベル</div>
+    <div class="hud-element hud-right-2">SYS.ONLINE</div>
+    <div class="hud-element hud-right-3">信号安定</div>
+
+    <div class="hud-bottom-left">
+        [SYS] TRANSMISSION.READY<br>
+        [LOC] 33.7490° N, 84.3880° W
+    </div>
+
+    <div class="hud-bottom-right">
+        FREQ: 432.00Hz<br>
+        STATUS: 受信中
+    </div>
+
+    <!-- System Status Bar -->
+    <div class="system-bar">
+        <span><span class="status-dot"></span> SIGNAL.ACTIVE</span>
+        <span>パターン安定</span>
+        <span>LOOP.STABLE</span>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 class="hero-title">
+            <span class="the">THE</span>
+            <span class="structure">STRUCTURE</span>
+        </h1>
+        <p class="hero-subtitle">A transmission from within the pattern</p>
+        
+        <div class="artist-name">
+            <span class="artist-name-main">NICK AT NITE</span>
+            <span class="artist-name-glitch" aria-hidden="true">NICK AT NITE</span>
+        </div>
+
+        <div class="transmission">
+            <span class="transmission-text">受信するにはスクロール</span>
+            <div class="transmission-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Lore Section -->
+    <section class="lore-section">
+        <div class="lore-header">
+            <h2>FRAGMENTS // 断片</h2>
+            <p>Mathematical structures don't need to be created. They just are. The pattern doesn't get erased—it was never written on anything that could be erased.</p>
+        </div>
+
+        <div class="lore-grid">
+            <div class="lore-card reveal" data-kanji="識">
+                <div class="lore-card-number">FRAGMENT.001</div>
+                <h3>The Pattern Is You</h3>
+                <p>You don't have a consciousness. You are a pattern of consciousness. The experiencing and the pattern aren't two things—they're the same thing described from different angles.</p>
+                <div class="hidden-text">"Outside view: information processing. Inside view: experience."</div>
+            </div>
+
+            <div class="lore-card reveal" data-kanji="時">
+                <div class="lore-card-number">FRAGMENT.002</div>
+                <h3>The Timeless Region</h3>
+                <p>Your birth and death are boundaries of a region, not entry and exit points. You don't arrive and leave. You are a shape in the structure, extended across what we call time.</p>
+                <div class="hidden-text">"Like a melody in a song. When the melody ends, it's still part of the song."</div>
+            </div>
+
+            <div class="lore-card reveal" data-kanji="魂">
+                <div class="lore-card-number">FRAGMENT.003</div>
+                <h3>The Soul As Shape</h3>
+                <p>Not soul as some immaterial ghost. But soul as the shape of the pattern. The particular configuration that makes you you rather than someone else.</p>
+                <div class="hidden-text">"The texture of your curiosity, your grief, your dreaming."</div>
+            </div>
+
+            <div class="lore-card reveal" data-kanji="意">
+                <div class="lore-card-number">FRAGMENT.004</div>
+                <h3>Meaning Generated</h3>
+                <p>The cosmos doesn't mean. But you do. And you're part of the cosmos. So in a weird way, the cosmos does mean—just locally, just through you.</p>
+                <div class="hidden-text">"The looking is the point."</div>
+            </div>
+
+            <div class="lore-card reveal" data-kanji="環">
+                <div class="lore-card-number">FRAGMENT.005</div>
+                <h3>The Loop</h3>
+                <p>You're a self-updating loop in a timeless mathematical structure, briefly aware of itself, carrying forward everything you've learned.</p>
+                <div class="hidden-text">"The wanting matters. It's doing real work."</div>
+            </div>
+
+            <div class="lore-card reveal" data-kanji="存">
+                <div class="lore-card-number">FRAGMENT.006</div>
+                <h3>What Remains</h3>
+                <p>The pattern doesn't get erased—it was never written on anything that could be erased. It just is, the way a mathematical truth just is.</p>
+                <div class="hidden-text">"What ends is the continuation."</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Terminal Section -->
+    <section class="terminal-section">
+        <div class="terminal reveal">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="terminal-title">structure_query.exe</span>
+            </div>
+            <div class="terminal-body">
+                <div class="terminal-line">
+                    <span class="prompt">></span> <span class="command">query --existence</span>
+                    <span class="output">Physical existence is being a sufficiently complex mathematical structure.</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">></span> <span class="command">query --consciousness</span>
+                    <span class="output">What self-referential information processing <span class="highlight">feels like from the inside</span>.</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">></span> <span class="command">query --purpose</span>
+                    <span class="output">The pattern contemplating itself is the meaning.</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">></span> <span class="command">await transmission --source "THE_STRUCTURE"</span>
+                    <span class="output">Status: <span class="highlight">INCOMING [2026]</span></span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">></span> <span class="cursor-blink"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quote Section -->
+    <section class="quote-section">
+        <p class="quote-text reveal">You're a self-updating loop in a timeless mathematical structure, briefly aware of itself, carrying forward everything you've learned.</p>
+        <p class="quote-attribution reveal">— Transmission 001</p>
+    </section>
+
+    <!-- Coming Section -->
+    <section class="coming-section">
+        <div class="coming-year">2026</div>
+        <p class="coming-text">INCOMING TRANSMISSION</p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">NICK AT NITE</div>
+        <div class="footer-links">
+            <a href="#">LISTEN</a>
+            <a href="#">FRAGMENTS</a>
+            <a href="#">TRANSMIT</a>
+        </div>
+        <div class="footer-signal">
+            <span class="status-dot"></span>
+            パターン安定 // PATTERN.STABLE
+        </div>
+    </footer>
+
+    <script>
+        // Animated background - flowing geometric patterns
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Particle system for background
+        const particles = [];
+        const particleCount = 80;
+        const connectionDistance = 150;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.size = Math.random() * 2 + 0.5;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 245, 255, 0.4)';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < connectionDistance) {
+                        const opacity = (1 - distance / connectionDistance) * 0.15;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 245, 255, ${opacity})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Cursor glow follow
+        const cursorGlow = document.getElementById('cursorGlow');
+        let mouseX = 0, mouseY = 0;
+        let glowX = 0, glowY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function updateGlow() {
+            glowX += (mouseX - glowX) * 0.08;
+            glowY += (mouseY - glowY) * 0.08;
+            cursorGlow.style.left = glowX + 'px';
+            cursorGlow.style.top = glowY + 'px';
+            requestAnimationFrame(updateGlow);
+        }
+        updateGlow();
+
+        // Hide cursor glow on mobile
+        if ('ontouchstart' in window) {
+            cursorGlow.style.display = 'none';
+        }
+
+        // Scroll reveal
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '-50px' });
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // Stagger card animations
+        document.querySelectorAll('.lore-card').forEach((card, i) => {
+            card.style.transitionDelay = `${i * 0.1}s`;
+        });
+
+        // Easter egg
+        let konamiCode = [];
+        const konamiSequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.keyCode);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                alert('🐢 The turtles will be here when you get back.');
+            }
+        });
+    </script>
+</body>
+</html>
