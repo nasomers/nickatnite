@@ -248,8 +248,8 @@
             animation: titlePulse 4s ease-in-out infinite;
         }
 
-        /* Gradient overlay - Chrome/Firefox */
-        @supports (-webkit-background-clip: text) or (background-clip: text) {
+        /* Gradient text - only for non-Safari browsers */
+        @supports not (-webkit-touch-callout: none) {
             .hero-title .structure {
                 background: linear-gradient(180deg, var(--white-pure) 0%, var(--cyan-bright) 50%, var(--cyan-glow) 100%);
                 -webkit-background-clip: text;
@@ -267,7 +267,6 @@
                 color: var(--cyan-glow);
                 text-shadow: 0 0 60px var(--cyan-glow), 0 0 120px var(--cyan-dim);
                 z-index: -1;
-                animation: titlePulse 4s ease-in-out infinite;
             }
         }
 
@@ -384,6 +383,7 @@
         .lore-section {
             padding: 150px 0;
             position: relative;
+            background: transparent;
         }
 
         .lore-header {
@@ -432,13 +432,15 @@
         }
 
         .lore-card {
-            background: linear-gradient(135deg, var(--bg-layer) 0%, rgba(0, 245, 255, 0.02) 100%);
+            background: linear-gradient(135deg, rgba(10, 10, 18, 0.85) 0%, rgba(0, 245, 255, 0.02) 100%);
             border: 1px solid var(--white-ghost);
             padding: 45px;
             position: relative;
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             cursor: pointer;
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .lore-card::before {
@@ -531,11 +533,13 @@
         }
 
         .terminal {
-            background: var(--bg-layer);
+            background: rgba(10, 10, 18, 0.85);
             border: 1px solid var(--white-ghost);
             width: 100%;
             max-width: 900px;
             position: relative;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .terminal::before {
@@ -628,6 +632,7 @@
             padding: 200px 40px;
             text-align: center;
             position: relative;
+            background: transparent;
         }
 
         .quote-section::before {
