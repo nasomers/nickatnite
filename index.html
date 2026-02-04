@@ -222,9 +222,9 @@
 
         .hero-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: clamp(3.5rem, 12vw, 10rem);
+            font-size: clamp(2rem, 10vw, 10rem);
             font-weight: 900;
-            letter-spacing: 0.25em;
+            letter-spacing: 0.15em;
             text-align: center;
             line-height: 0.9;
             position: relative;
@@ -242,32 +242,38 @@
 
         .hero-title .structure {
             display: block;
-            background: linear-gradient(180deg, var(--white-pure) 0%, var(--cyan-bright) 50%, var(--cyan-glow) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
             position: relative;
+            color: var(--cyan-glow);
+            text-shadow: 0 0 60px var(--cyan-dim), 0 0 120px var(--cyan-dim);
+            animation: titlePulse 4s ease-in-out infinite;
         }
 
-        /* Glow effect as pseudo-element (Safari-compatible) */
-        .hero-title .structure::before {
-            content: 'STRUCTURE';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            color: var(--cyan-glow);
-            filter: blur(40px);
-            opacity: 0.5;
-            z-index: -1;
-            animation: titlePulse 4s ease-in-out infinite;
-            -webkit-text-fill-color: var(--cyan-glow);
-            background: none;
+        /* Gradient overlay - Chrome/Firefox */
+        @supports (-webkit-background-clip: text) or (background-clip: text) {
+            .hero-title .structure {
+                background: linear-gradient(180deg, var(--white-pure) 0%, var(--cyan-bright) 50%, var(--cyan-glow) 100%);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                text-shadow: none;
+            }
+
+            .hero-title .structure::before {
+                content: 'STRUCTURE';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                color: var(--cyan-glow);
+                text-shadow: 0 0 60px var(--cyan-glow), 0 0 120px var(--cyan-dim);
+                z-index: -1;
+                animation: titlePulse 4s ease-in-out infinite;
+            }
         }
 
         @keyframes titlePulse {
-            0%, 100% { opacity: 0.5; filter: blur(40px); }
-            50% { opacity: 0.7; filter: blur(60px); }
+            0%, 100% { text-shadow: 0 0 60px var(--cyan-glow), 0 0 120px var(--cyan-dim); }
+            50% { text-shadow: 0 0 80px var(--cyan-glow), 0 0 160px var(--cyan-glow); }
         }
 
         .hero-subtitle {
@@ -782,11 +788,12 @@
             }
 
             .hero-title {
-                letter-spacing: 0.1em;
+                font-size: clamp(1.5rem, 9vw, 3rem);
+                letter-spacing: 0.05em;
             }
 
             .hero-title .structure::before {
-                letter-spacing: 0.1em;
+                letter-spacing: 0.05em;
             }
 
             .hero-subtitle {
@@ -880,15 +887,16 @@
         /* Extra small screens */
         @media (max-width: 380px) {
             .hero-title {
-                letter-spacing: 0.05em;
+                font-size: clamp(1.2rem, 8vw, 2rem);
+                letter-spacing: 0.02em;
             }
 
             .hero-title .structure::before {
-                letter-spacing: 0.05em;
+                letter-spacing: 0.02em;
             }
 
             .artist-name-main {
-                letter-spacing: 0.2em;
+                letter-spacing: 0.15em;
             }
 
             .lore-card {
